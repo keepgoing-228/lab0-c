@@ -67,7 +67,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     // list_add_tail(&ele->list, head);
     // return true;
 
-    q_insert_head(head->prev, s);
+    return q_insert_head(head->prev, s);
 }
 
 /* Remove an element from head of queue */
