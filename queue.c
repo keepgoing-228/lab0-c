@@ -67,6 +67,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     // list_add_tail(&ele->list, head);
     // return true;
 
+    // use q_insert_head to insert at tail directly
     return q_insert_head(head->prev, s);
 }
 
@@ -95,19 +96,22 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (!head || list_empty(head))
-        return NULL;
+    // if (!head || list_empty(head))
+    //     return NULL;
 
-    struct list_head *tail = head->prev;
-    element_t *ele = list_entry(tail, element_t, list);
+    // struct list_head *last = head->prev;
+    // element_t *ele = list_entry(last, element_t, list);
 
-    if (sp) {
-        strncpy(sp, ele->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
+    // if (sp) {
+    //     strncpy(sp, ele->value, bufsize - 1);
+    //     sp[bufsize - 1] = '\0';
+    // }
 
-    list_del(tail);
-    return ele;
+    // list_del(last);
+    // return ele;
+
+    // use q_remove_head to remove at tail directly
+    return q_remove_head(head->prev->prev, sp, bufsize);
 }
 
 /* Return number of elements in queue */
@@ -128,6 +132,22 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head || list_empty(head))
+        return false;
+
+    struct list_head *slow = head->next;
+    struct list_head *fast = head->next;
+
+    while (fast != head &&
+           fast->next != head) {  // while (fast && fast->next) is not work in
+                                  // double liked list
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    list_del(slow);
+    q_release_element(list_entry(slow, element_t, list));
+
     return true;
 }
 
@@ -135,6 +155,29 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head || list_empty(head))
+        return false;
+
+    struct list_head *prev = head;
+    struct list_head *cur = head->next;
+
+    while (cur) {
+        while (cur->next && list_entry(cur, element_t, list)->value ==
+                                list_entry(cur->next, element_t, list)->value) {
+            cur = cur->next;
+        }
+
+        // Check if there are duplication
+        if (prev->next != cur) {
+            prev->next = cur->next;
+            cur->next->prev = prev;
+            cur = cur->next;
+        } else {
+            prev = cur;
+            cur = cur->next;
+        }
+    }
+
     return true;
 }
 
