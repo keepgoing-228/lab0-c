@@ -155,19 +155,21 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    // check if correct?
+
     if (!head || list_empty(head))
         return false;
 
     struct list_head *prev = head;
     struct list_head *cur = head->next;
 
-    while (cur) {
+    while (cur != head) {
         while (cur->next && list_entry(cur, element_t, list)->value ==
                                 list_entry(cur->next, element_t, list)->value) {
             cur = cur->next;
         }
 
-        // Check if there are duplication
+        // Check if the current node is a duplicate, if so, remove it
         if (prev->next != cur) {
             prev->next = cur->next;
             cur->next->prev = prev;
@@ -185,15 +187,59 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (!head || list_empty(head))
+        return;
+
+    struct list_head *cur = head;
+
+    while (cur->next != head && cur->next->next != head) {
+        struct list_head *first = cur->next;
+        struct list_head *second = first->next;
+
+        list_move(second, cur);
+
+        cur = first;  // skip the two nodes, not cur = second
+    }
+
+    // q_reverseK(head, 2);
 }
 
 /* Reverse elements in queue */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    q_reverseK(head, q_size(head));
+}
 
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    int size = q_size(head);
+    if (!head || list_empty(head) || k <= 1 || k > size)
+        return;
+
+    struct list_head *start = head;
+    int remaining = size;
+
+    while (remaining >= k) {
+        // Process k nodes at a time
+        struct list_head *cur = start;
+
+        // Reverse k nodes
+        for (int i = 0; i < k; i++) {
+            struct list_head *tmp = cur->next;
+            // Skip the first node in the group
+            if (i > 0) {
+                // Move the current node to the beginning of the group
+                list_move(tmp, start);
+            }
+            cur = tmp;
+        }
+
+        // Move to the next group
+        start = cur;
+        remaining -= k;
+    }
 }
 
 /* Sort elements of queue in ascending/descending order */
